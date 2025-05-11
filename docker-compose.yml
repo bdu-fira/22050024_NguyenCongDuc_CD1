@@ -1,0 +1,48 @@
+
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "4000:4000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/mydatabase
+      - JWT_SECRET=random#secret
+      - STRIPE_SECRET_KEY=
+    depends_on:
+      - mongo
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://backend:4000
+    depends_on:
+      - backend
+    restart: always
+
+  admin:
+    build: ./admin
+    container_name: admin
+    ports:
+      - "5174:5174"
+    environment:
+      - VITE_API_URL=http://backend:4000
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  mongo-data:
